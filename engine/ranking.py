@@ -8,12 +8,14 @@ Enforces Section 11 & Section 4 of specifications:
 - Returns TOP 5 results.
 """
 from typing import List, Dict, Any
-from config import MonitorConfig
+from config import MonitorConfig, is_international_airline
 
 
 def rank_and_select_top5(flights: List[Dict[str, Any]], config: MonitorConfig) -> List[Dict[str, Any]]:
     """
     Filters and ranks flight options to produce the TOP 5 cheapest realistic itineraries.
+    Focuses primarily on International Airlines (Emirates, Air Arabia, flydubai, Oman Air, Qatar Airways, etc.)
+    over domestic Indian carriers (IndiGo, Air India Express, SpiceJet) when prefer_international_airlines is enabled.
     """
     valid_flights = []
 
@@ -30,7 +32,7 @@ def rank_and_select_top5(flights: List[Dict[str, Any]], config: MonitorConfig) -
         if config.departure_airports and f.get("departure_airport") not in config.departure_airports:
             continue
 
-        # 4. User constraint: Destination airport filter
+        # 4. User constraint: Destination airport filter (DXB, SHJ)
         if config.destination_airports and f.get("arrival_airport") not in config.destination_airports:
             continue
 
@@ -43,18 +45,31 @@ def rank_and_select_top5(flights: List[Dict[str, Any]], config: MonitorConfig) -
         if f.get("duration_minutes", 0) > max_duration_mins:
             continue
 
+        # Tag international airline status
+        f["is_international"] = is_international_airline(f.get("airline", ""))
+
         valid_flights.append(f)
 
     # Ranking formula:
-    # Primary: Total Effective Price
-    # Nonstop slight bonus: If a nonstop flight is within ₹150 of a 1-stop, prioritize nonstop
+    # 0. Primary focus: International Airlines (tier 0) ahead of Indian domestic airlines (tier 1)
+    # 1. Secondary: Total Effective Price
+    # 2. Nonstop slight bonus: If a nonstop flight is within ₹150 of a 1-stop, prioritize nonstop
+    prefer_intl = getattr(config, "prefer_international_airlines", True)
+
     def sort_key(item: Dict[str, Any]):
         price = item["total_effective_price"]
         stops = item.get("stops", 0)
         # Small nonstop tie-breaker if price within ₹150
         effective_rank_score = price - (150.0 if stops == 0 else 0.0)
         reliability = -item.get("source_reliability_score", 0)
-        return (effective_rank_score, item["duration_minutes"], reliability)
+        duration = item.get("duration_minutes", 0)
+
+        if prefer_intl:
+            is_intl = is_international_airline(item.get("airline", ""))
+            airline_tier = 0 if is_intl else 1
+            return (airline_tier, effective_rank_score, duration, reliability)
+
+        return (effective_rank_score, duration, reliability)
 
     valid_flights.sort(key=sort_key)
 

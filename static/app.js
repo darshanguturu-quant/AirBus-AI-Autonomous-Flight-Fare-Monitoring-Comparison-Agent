@@ -22,7 +22,7 @@ const AIRPORT_NAMES = {
 };
 
 const DEST_NAMES = {
-  "DXB": "Dubai Intl", "SHJ": "Sharjah Intl", "AUH": "Abu Dhabi Intl"
+  "DXB": "Dubai Intl", "SHJ": "Sharjah Intl"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -448,12 +448,15 @@ function renderFlightCard(f) {
   const dayOfWeek = getDayOfWeek(travelDateStr);
   const dateBadge = travelDateStr ? `<span class="flight-date-tag">📅 ${dayOfWeek}, ${formattedFlightDate}</span>` : '';
 
+  const intlBadge = f.is_international ? `<span class="badge-intl-airline">🌍 International Carrier</span>` : '';
+
   return `
     <article class="flight-card ${rankClass}" id="flight-card-${f.itinerary_id}">
       <div class="card-top-bar">
         <div class="rank-badge-wrap">
           <div class="rank-number">${f.rank}</div>
           <span class="rank-tag">${f.rank === 1 ? '🏆 LOWEST EFFECTIVE COST' : `RANK #${f.rank}`}</span>
+          ${intlBadge}
           ${dateBadge}
         </div>
         ${deltaBadge}
@@ -574,42 +577,40 @@ function renderTableRow(f) {
   `;
 }
 
-// Section 17 Arbitrage Calculator
+// Section 17 Arbitrage Calculator (DXB vs SHJ)
 function updateArbitrageCalculator(flights) {
   const dxbFlights = flights.filter(f => f.arrival_airport === "DXB");
   const shjFlights = flights.filter(f => f.arrival_airport === "SHJ");
-  const auhFlights = flights.filter(f => f.arrival_airport === "AUH");
 
   const minDxb = dxbFlights.length > 0 ? dxbFlights[0] : null;
   const minShj = shjFlights.length > 0 ? shjFlights[0] : null;
-  const minAuh = auhFlights.length > 0 ? auhFlights[0] : null;
 
   // DXB
-  if (minDxb) {
-    document.getElementById("arb-dxb-airfare").textContent = `₹${minDxb.airfare_total.toLocaleString('en-IN')}`;
-    document.getElementById("arb-dxb-total").textContent = `₹${minDxb.total_effective_price.toLocaleString('en-IN')}`;
+  const dxbAirfareEl = document.getElementById("arb-dxb-airfare");
+  const dxbTotalEl = document.getElementById("arb-dxb-total");
+  if (minDxb && dxbAirfareEl && dxbTotalEl) {
+    dxbAirfareEl.textContent = `₹${minDxb.airfare_total.toLocaleString('en-IN')}`;
+    dxbTotalEl.textContent = `₹${minDxb.total_effective_price.toLocaleString('en-IN')}`;
   }
 
   // SHJ
-  if (minShj) {
-    document.getElementById("arb-shj-airfare").textContent = `₹${minShj.airfare_total.toLocaleString('en-IN')}`;
-    document.getElementById("arb-shj-total").textContent = `₹${minShj.total_effective_price.toLocaleString('en-IN')}`;
+  const shjAirfareEl = document.getElementById("arb-shj-airfare");
+  const shjTotalEl = document.getElementById("arb-shj-total");
+  const shjBadgeEl = document.getElementById("shj-saving-badge");
+  const shjCompEl = document.getElementById("shj-comparison-text");
+
+  if (minShj && shjAirfareEl && shjTotalEl) {
+    shjAirfareEl.textContent = `₹${minShj.airfare_total.toLocaleString('en-IN')}`;
+    shjTotalEl.textContent = `₹${minShj.total_effective_price.toLocaleString('en-IN')}`;
 
     if (minDxb && minShj.total_effective_price < minDxb.total_effective_price) {
       const saving = minDxb.total_effective_price - minShj.total_effective_price;
       const pct = ((saving / minDxb.total_effective_price) * 100).toFixed(1);
-      document.getElementById("shj-saving-badge").textContent = `SAVES ₹${saving.toLocaleString('en-IN')}`;
-      document.getElementById("shj-comparison-text").textContent = `⭐ Flying to Sharjah + ₹500 taxi is ₹${saving.toLocaleString('en-IN')} (${pct}%) cheaper than DXB!`;
+      if (shjBadgeEl) shjBadgeEl.textContent = `SAVES ₹${saving.toLocaleString('en-IN')}`;
+      if (shjCompEl) shjCompEl.textContent = `⭐ Flying to Sharjah + ₹500 taxi is ₹${saving.toLocaleString('en-IN')} (${pct}%) cheaper than DXB!`;
     } else {
-      document.getElementById("shj-comparison-text").textContent = `Sharjah route competitive with DXB direct.`;
+      if (shjCompEl) shjCompEl.textContent = `Sharjah route competitive with DXB direct.`;
     }
-  }
-
-  // AUH
-  if (minAuh) {
-    document.getElementById("arb-auh-airfare").textContent = `₹${minAuh.airfare_total.toLocaleString('en-IN')}`;
-    document.getElementById("arb-auh-total").textContent = `₹${minAuh.total_effective_price.toLocaleString('en-IN')}`;
-    document.getElementById("auh-comparison-text").textContent = `Airport express shuttle transfer ~1h 15m to central Dubai.`;
   }
 }
 
@@ -806,9 +807,17 @@ async function loadConfig() {
     document.getElementById("cfg-alert-threshold").value = currentConfig.alert_price_drop_absolute;
 
     const gt = currentConfig.ground_transport_costs || {};
-    document.getElementById("cfg-gt-dxb").value = gt.DXB !== undefined ? gt.DXB : 0;
-    document.getElementById("cfg-gt-shj").value = gt.SHJ !== undefined ? gt.SHJ : 500;
-    document.getElementById("cfg-gt-auh").value = gt.AUH !== undefined ? gt.AUH : 1800;
+    if (document.getElementById("cfg-gt-dxb")) {
+      document.getElementById("cfg-gt-dxb").value = gt.DXB !== undefined ? gt.DXB : 0;
+    }
+    if (document.getElementById("cfg-gt-shj")) {
+      document.getElementById("cfg-gt-shj").value = gt.SHJ !== undefined ? gt.SHJ : 500;
+    }
+
+    const preferIntlEl = document.getElementById("cfg-prefer-intl");
+    if (preferIntlEl) {
+      preferIntlEl.checked = currentConfig.prefer_international_airlines !== false;
+    }
 
     const groqKeyInput = document.getElementById("cfg-groq-key");
     if (groqKeyInput) {
@@ -862,10 +871,12 @@ async function handleConfigSubmit(e) {
     refresh_interval_seconds: parseInt(document.getElementById("cfg-refresh-interval").value, 10),
     alert_price_drop_absolute: parseFloat(document.getElementById("cfg-alert-threshold").value),
     ground_transport_costs: {
-      "DXB": parseFloat(document.getElementById("cfg-gt-dxb").value),
-      "SHJ": parseFloat(document.getElementById("cfg-gt-shj").value),
-      "AUH": parseFloat(document.getElementById("cfg-gt-auh").value)
+      "DXB": parseFloat(document.getElementById("cfg-gt-dxb").value) || 0,
+      "SHJ": parseFloat(document.getElementById("cfg-gt-shj").value) || 500
     },
+    prefer_international_airlines: document.getElementById("cfg-prefer-intl") ? document.getElementById("cfg-prefer-intl").checked : true,
+    destination_airports: ["DXB", "SHJ"],
+    destination: "Dubai (DXB, SHJ)",
     groq_api_key: document.getElementById("cfg-groq-key") ? document.getElementById("cfg-groq-key").value.trim() : "",
     departure_airports: selectedAirports
   };

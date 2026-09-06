@@ -26,19 +26,55 @@ SOUTH_INDIA_AIRPORTS: Dict[str, Dict[str, str]] = {
     "TIR": {"name": "Tirupati Airport", "city": "Tirupati", "state": "Andhra Pradesh"},
 }
 
-# Dubai-area arrival airports
+# Dubai-area arrival airports (DXB and SHJ)
 DESTINATION_AIRPORTS: Dict[str, Dict[str, str]] = {
     "DXB": {"name": "Dubai International Airport", "city": "Dubai", "country": "UAE"},
     "SHJ": {"name": "Sharjah International Airport", "city": "Sharjah", "country": "UAE"},
-    "AUH": {"name": "Zayed International Airport (Abu Dhabi)", "city": "Abu Dhabi", "country": "UAE"},
 }
 
 # Ground transport estimates to Dubai Downtown/Central (INR)
 DEFAULT_GROUND_TRANSPORT_INR: Dict[str, float] = {
     "DXB": 0.0,      # Direct arrival in Dubai
     "SHJ": 500.0,    # Intercity bus / shared taxi Sharjah to Dubai
-    "AUH": 1800.0,   # Airport express coach / taxi Abu Dhabi to Dubai
 }
+
+# Domestic Indian Carriers (to be filtered/de-prioritized when focusing on International Airlines)
+INDIAN_AIRLINES: set = {
+    "indigo",
+    "air india express",
+    "air india",
+    "spicejet",
+    "akasa air",
+    "akasa",
+    "vistara"
+}
+
+# Major International Airlines operating South India to UAE corridor
+INTERNATIONAL_AIRLINES: set = {
+    "emirates",
+    "flydubai",
+    "air arabia",
+    "etihad",
+    "etihad airways",
+    "oman air",
+    "qatar airways",
+    "gulf air",
+    "kuwait airways",
+    "saudia",
+    "srilankan",
+    "srilankan airlines"
+}
+
+
+def is_international_airline(airline_name: str) -> bool:
+    """Returns True if the airline is an international carrier (not an Indian domestic carrier)."""
+    if not airline_name:
+        return False
+    name_clean = airline_name.strip().lower()
+    for indian in INDIAN_AIRLINES:
+        if indian in name_clean:
+            return False
+    return True
 
 # Strict Allowlist of Approved Flight Data Sources
 # Categorized with reliability ratings:
@@ -89,7 +125,7 @@ STRICTLY_DISALLOWED_PATTERNS: List[str] = [
 class MonitorConfig(BaseModel):
     """User Configuration with full customization and persistence."""
     departure_region: str = "South India"
-    destination: str = "Dubai (DXB, SHJ, AUH)"
+    destination: str = "Dubai (DXB, SHJ)"
     cabin: str = "Economy"
     travel_date: str = Field(default_factory=lambda: (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d"))
     passengers: int = 1
@@ -102,6 +138,7 @@ class MonitorConfig(BaseModel):
     departure_airports: List[str] = list(SOUTH_INDIA_AIRPORTS.keys())
     destination_airports: List[str] = list(DESTINATION_AIRPORTS.keys())
     ground_transport_costs: Dict[str, float] = Field(default_factory=lambda: DEFAULT_GROUND_TRANSPORT_INR.copy())
+    prefer_international_airlines: bool = True  # Focus primarily on International Airlines (Emirates, Air Arabia, flydubai, etc.)
     alert_price_drop_absolute: float = 300.0  # ₹300
     alert_price_drop_percentage: float = 5.0   # 5%
     auto_refresh_enabled: bool = True

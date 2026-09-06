@@ -65,7 +65,7 @@ def test_allowlist_blocks_disallowed_sources():
 
 def test_price_normalization_and_ground_transport():
     cfg = MonitorConfig()
-    cfg.ground_transport_costs = {"DXB": 0.0, "SHJ": 500.0, "AUH": 1800.0}
+    cfg.ground_transport_costs = {"DXB": 0.0, "SHJ": 500.0}
 
     # Flight 1: to DXB
     raw_dxb = {
@@ -153,7 +153,7 @@ def test_ranking_top5_and_constraints():
         {"itinerary_id": "f2", "departure_airport": "CCJ", "arrival_airport": "SHJ", "total_effective_price": 7100.0, "stops": 0, "duration_minutes": 240, "availability_status": "available"},
         {"itinerary_id": "f3", "departure_airport": "BLR", "arrival_airport": "SHJ", "total_effective_price": 7900.0, "stops": 0, "duration_minutes": 255, "availability_status": "available"},
         {"itinerary_id": "f4", "departure_airport": "MAA", "arrival_airport": "DXB", "total_effective_price": 8100.0, "stops": 0, "duration_minutes": 270, "availability_status": "available"},
-        {"itinerary_id": "f5", "departure_airport": "HYD", "arrival_airport": "AUH", "total_effective_price": 8300.0, "stops": 0, "duration_minutes": 255, "availability_status": "available"},
+        {"itinerary_id": "f5", "departure_airport": "HYD", "arrival_airport": "DXB", "total_effective_price": 8300.0, "stops": 0, "duration_minutes": 255, "availability_status": "available"},
         {"itinerary_id": "f6_expensive", "departure_airport": "BLR", "arrival_airport": "DXB", "total_effective_price": 12500.0, "stops": 0, "duration_minutes": 255, "availability_status": "available"},
         {"itinerary_id": "f7_too_many_stops", "departure_airport": "TIR", "arrival_airport": "DXB", "total_effective_price": 6500.0, "stops": 2, "duration_minutes": 300, "availability_status": "available"},
     ]
@@ -190,3 +190,31 @@ def test_alert_logic():
     ]
     alerts_b = detect_price_changes_and_alerts(curr_top5_drop, prev_top5, cfg, "scan_test_2")
     assert any(a["alert_type"] == "PRICE_DROP" for a in alerts_b)
+
+
+def test_international_airlines_prioritization():
+    from config import is_international_airline
+
+    assert is_international_airline("Emirates") is True
+    assert is_international_airline("Air Arabia") is True
+    assert is_international_airline("flydubai") is True
+    assert is_international_airline("Oman Air") is True
+    assert is_international_airline("IndiGo") is False
+    assert is_international_airline("Air India Express") is False
+    assert is_international_airline("SpiceJet") is False
+
+    cfg = MonitorConfig(prefer_international_airlines=True)
+    flights = [
+        {"itinerary_id": "f_indigo", "airline": "IndiGo", "departure_airport": "COK", "arrival_airport": "DXB", "total_effective_price": 18000.0, "stops": 0, "duration_minutes": 240, "availability_status": "available"},
+        {"itinerary_id": "f_arabia", "airline": "Air Arabia", "departure_airport": "COK", "arrival_airport": "SHJ", "total_effective_price": 21000.0, "stops": 0, "duration_minutes": 240, "availability_status": "available"},
+        {"itinerary_id": "f_emirates", "airline": "Emirates", "departure_airport": "BLR", "arrival_airport": "DXB", "total_effective_price": 24000.0, "stops": 0, "duration_minutes": 240, "availability_status": "available"},
+        {"itinerary_id": "f_flydubai", "airline": "flydubai", "departure_airport": "CCJ", "arrival_airport": "DXB", "total_effective_price": 22000.0, "stops": 0, "duration_minutes": 240, "availability_status": "available"},
+    ]
+
+    ranked = rank_and_select_top5(flights, cfg)
+    # International airlines must rank ahead of IndiGo even if IndiGo has a lower base price
+    assert ranked[0]["airline"] == "Air Arabia"
+    assert ranked[1]["airline"] == "flydubai"
+    assert ranked[2]["airline"] == "Emirates"
+    assert ranked[3]["airline"] == "IndiGo"
+

@@ -165,7 +165,17 @@ def get_config() -> MonitorConfig:
             data = json.loads(row["config_json"])
             if "consecutive_days" not in data or data["consecutive_days"] < 7:
                 data["consecutive_days"] = 7
-            return MonitorConfig(**data)
+            # Remove AUH airport as destination
+            if "destination_airports" in data and "AUH" in data["destination_airports"]:
+                data["destination_airports"] = [a for a in data["destination_airports"] if a != "AUH"]
+            if "ground_transport_costs" in data and "AUH" in data["ground_transport_costs"]:
+                data["ground_transport_costs"].pop("AUH", None)
+            if "destination" in data and "AUH" in data["destination"]:
+                data["destination"] = "Dubai (DXB, SHJ)"
+            if "prefer_international_airlines" not in data:
+                data["prefer_international_airlines"] = True
+            cfg = MonitorConfig(**data)
+            return cfg
         except Exception:
             pass
 

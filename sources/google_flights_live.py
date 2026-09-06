@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Tuple, Optional
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from config import MonitorConfig
+from config import MonitorConfig, is_international_airline
 from sources.allowlist import validate_and_classify_source
 
 try:
@@ -299,6 +299,7 @@ def _query_single_route(
                     "sources_checked": sources_checked,
                     "source_reliability_score": 80,
                     "source_type": "Verified Flight Search",
+                    "is_international": is_international_airline(primary_airline),
                     "timestamp_checked": now_str,
                     "availability_status": "available",
                     "is_verified": True
@@ -358,7 +359,11 @@ def fetch_live_google_flights(
         selected_airports,
         key=lambda x: priority_order.index(x) if x in priority_order else 99
     )
-    dest_airports = config.destination_airports or ["DXB", "SHJ", "AUH"]
+    # Destination airports: DXB and SHJ only (AUH removed)
+    raw_dest = config.destination_airports or ["DXB", "SHJ"]
+    dest_airports = [a for a in raw_dest if a != "AUH"]
+    if not dest_airports:
+        dest_airports = ["DXB", "SHJ"]
 
     # Build tasks for all route pairs across all consecutive dates
     tasks = [(dep, arr, dt) for dep in sorted_dep_airports for arr in dest_airports for dt in consecutive_dates]

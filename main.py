@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="South India to Dubai Autonomous Flight Monitor",
-    description="Continuously monitors the 5 cheapest economy flight options from 15 South Indian airports to DXB, SHJ, AUH with total effective cost normalization.",
+    description="Continuously monitors the 5 cheapest economy flight options from 15 South Indian airports to DXB and SHJ with primary focus on International Airlines and total effective cost normalization.",
     lifespan=lifespan
 )
 

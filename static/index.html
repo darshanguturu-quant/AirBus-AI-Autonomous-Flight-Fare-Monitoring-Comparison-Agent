@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AirBus AI — Autonomous Flight Fare Monitoring & Comparison Agent (South India to Dubai)</title>
-  <meta name="description" content="Autonomous AI flight monitor tracking the 5 cheapest economy flights from 15 South Indian airports to Dubai (DXB, SHJ, AUH) every 5 minutes with total effective cost normalization.">
+  <meta name="description" content="Autonomous AI flight monitor tracking the 5 cheapest economy flights from 15 South Indian airports to Dubai (DXB, SHJ) every 5 minutes focusing on international airlines with total effective cost normalization.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
             <span class="brand-accent">AIRBUS</span> MONITOR
             <span class="badge badge-ai">AUTONOMOUS AGENT</span>
           </div>
-          <div class="brand-subtitle">South India ➔ Dubai Area (DXB · SHJ · AUH) • 5-Min Refresh</div>
+          <div class="brand-subtitle">South India ➔ Dubai Area (DXB · SHJ) • 🌍 International Airlines Focus • 5-Min Refresh</div>
         </div>
       </div>
 
@@ -218,7 +218,7 @@
         <div class="section-title-wrap">
           <h2 class="section-title">DUBAI GROUND TRANSPORT ARBITRAGE</h2>
           <p class="section-desc">
-            Section 17 Analysis: Flying to Sharjah (SHJ) or Abu Dhabi (AUH) can be significantly cheaper than Dubai International (DXB), even after factoring in taxi/coach ground transport to central Dubai.
+            Section 17 Analysis: Flying to Sharjah (SHJ) can be significantly cheaper than Dubai International (DXB), even after factoring in taxi/coach ground transport to central Dubai.
           </p>
         </div>
       </div>
@@ -253,21 +253,6 @@
             <div class="arb-total-row"><span>Total Effective:</span> <span class="arb-total-cost" id="arb-shj-total">₹--</span></div>
           </div>
           <div class="arb-badge-footer" id="shj-comparison-text">Evaluating Ground Savings...</div>
-        </div>
-
-        <!-- AUH Card -->
-        <div class="arbitrage-card" id="arb-card-auh">
-          <div class="arb-card-header">
-            <span class="airport-code-badge badge-auh">AUH</span>
-            <span class="airport-name">Abu Dhabi (Zayed Intl)</span>
-          </div>
-          <div class="arb-price-breakdown">
-            <div class="arb-row"><span>Cheapest Airfare:</span> <strong id="arb-auh-airfare">₹--</strong></div>
-            <div class="arb-row"><span>Ground Transport to Dubai:</span> <span class="tag tag-cost">+₹1,800 (Airport Coach/Taxi)</span></div>
-            <div class="arb-divider"></div>
-            <div class="arb-total-row"><span>Total Effective:</span> <span class="arb-total-cost" id="arb-auh-total">₹--</span></div>
-          </div>
-          <div class="arb-badge-footer" id="auh-comparison-text">1hr 15m transfer to Dubai</div>
         </div>
       </div>
     </section>
@@ -377,7 +362,7 @@
           </div>
 
           <div class="form-section-title">Dubai Ground Transport Estimates (INR to Dubai Downtown)</div>
-          <div class="form-row three-cols">
+          <div class="form-row two-cols">
             <div class="form-group">
               <label for="cfg-gt-dxb">DXB Ground Cost</label>
               <input type="number" id="cfg-gt-dxb" class="form-input" value="0">
@@ -386,10 +371,16 @@
               <label for="cfg-gt-shj">SHJ Ground Cost</label>
               <input type="number" id="cfg-gt-shj" class="form-input" value="500">
             </div>
-            <div class="form-group">
-              <label for="cfg-gt-auh">AUH Ground Cost</label>
-              <input type="number" id="cfg-gt-auh" class="form-input" value="1800">
-            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 12px; background: rgba(56, 189, 248, 0.06); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid rgba(56, 189, 248, 0.25);">
+            <label class="checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; color: #38bdf8; font-size: 0.95rem;">
+              <input type="checkbox" id="cfg-prefer-intl" checked style="width: 18px; height: 18px; accent-color: #38bdf8; cursor: pointer;">
+              <span>🌍 Focus Primarily on International Airlines (Emirates, Air Arabia, flydubai, Oman Air, Qatar Airways, Saudia, etc.)</span>
+            </label>
+            <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 6px; display: block; line-height: 1.4;">
+              When enabled, the system prioritizes premier international airlines ahead of domestic Indian low-cost carriers (IndiGo, Air India Express, SpiceJet).
+            </small>
           </div>
 
           <div class="form-section-title">Monitored Departure Airports (South India)</div>

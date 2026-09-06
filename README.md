@@ -1,11 +1,11 @@
 # ✈️ AirBus AI — Autonomous Flight Fare Monitoring & Comparison Agent
-### *Continuous Real-Time Flight Fare Tracking & Matrix Comparison: South India ➔ Dubai Area (DXB · SHJ · AUH)*
+### *Continuous Real-Time Flight Fare Tracking & Matrix Comparison: South India ➔ Dubai Area (DXB · SHJ)*
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-State%20Database-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![Status](https://img.shields.io/badge/Agent-Autonomous%20%285--Min%29-brightgreen)]()
-[![Tests](https://img.shields.io/badge/Tests-11%2F11%20Passed%20%28100%25%29-success)]()
+[![Tests](https://img.shields.io/badge/Tests-12%2F12%20Passed%20%28100%25%29-success)]()
 
 ---
 
@@ -37,13 +37,16 @@ Booking flights from South India to the United Arab Emirates (UAE) is notoriousl
 * **The Problem**: Airline revenue management algorithms fluctuate seat prices dynamically based on demand spikes, day-of-week heuristics, and remaining seat buckets. A flight departing on a Monday or Tuesday can cost ₹40,142, while the exact same airline and route on Wednesday or Friday costs ₹24,875. Typical travelers search only a single static date and unknowingly pay peak prices.
 * **How AirBus AI Solves It**: The **7 Consecutive Dates Comparison Matrix** searches an entire 7-day week simultaneously. It computes the lowest fare for each day, highlights the **`🏆 CHEAPEST DAY`** with a glowing gold badge, and displays the exact verified savings (e.g., *“Save ₹15,267 by choosing Day 1 instead of Day 2”*).
 
-### 2. The UAE Airport Arbitrage Dilemma (DXB vs. SHJ vs. AUH)
-* **The Problem**: Most travelers default to searching only Dubai International Airport (`DXB`). Budget carriers like Air Arabia frequently fly into Sharjah (`SHJ`), and airlines like Wizz Air, IndiGo, or Etihad fly into Abu Dhabi (`AUH`) for thousands of rupees less. However, travelers often fail to calculate the ground transport cost to get to downtown Dubai.
+### 2. The Dubai Airport Arbitrage Dilemma (DXB vs. SHJ)
+* **The Problem**: Most travelers default to searching only Dubai International Airport (`DXB`). Budget carriers like Air Arabia frequently fly into Sharjah (`SHJ`) for thousands of rupees less. However, travelers often wonder whether ground transport costs eliminate the savings.
 * **How AirBus AI Solves It**: The system includes a **Dubai Ground Transport Arbitrage Engine** that calculates the **Total Realistic Effective Travel Cost**:
   * `DXB`: **₹0** (direct arrival in central Dubai, connected to Dubai Metro)
-  * `SHJ`: **+₹500** (intercity bus or shared taxi from Sharjah to Dubai)
-  * `AUH`: **+₹1,800** (express airport coach / taxi from Abu Dhabi to Dubai)
-  * Flights are ranked strictly by *Total Effective Cost*, preventing you from making false economies where a cheaper flight is wiped out by an expensive taxi ride.
+  * `SHJ`: **+₹500** (intercity express bus or shared taxi from Sharjah to Dubai)
+  * Flights are ranked strictly by *Total Effective Cost*, showing you whether flying into Sharjah genuinely delivers real savings.
+
+### 3. Primary Focus on International Airlines (Over Domestic Indian Carriers)
+* **The Problem**: Typical search engines flood travelers with domestic Indian low-cost carriers (IndiGo, Air India Express, SpiceJet) that feature cramped seating, restrictive cabin baggage, and costly add-on bag fees. Many international flyers prefer the comfort, baggage allowances, and service of established international airlines.
+* **How AirBus AI Solves It**: The ranking engine features an **International Airlines Priority Filter** (`prefer_international_airlines = True`). It automatically prioritizes premier international carriers (**Emirates**, **Air Arabia**, **flydubai**, **Oman Air**, **Qatar Airways**, **Saudia**, **SriLankan Airlines**, **Gulf Air**, etc.) at the top of the rankings, allowing travelers to instantly spot the best international deals.
 
 ### 3. South India Multi-Hub Search Fatigue (15 Airports)
 * **The Problem**: A traveler residing in South India often has 2 to 4 international airports within driving distance (for example, in Kerala: Kochi, Kozhikode, and Kannur; in Tamil Nadu/Karnataka: Chennai, Bengaluru, and Coimbatore). Searching 15 origins $\times$ 3 destinations $\times$ 7 dates = **315 route permutations** manually across multiple airline websites takes hours of repetitive work.
@@ -127,12 +130,11 @@ air_bus/
 | **RJA** | Rajahmundry Airport | Rajahmundry | Andhra Pradesh |
 | **TIR** | Tirupati Airport | Tirupati | Andhra Pradesh |
 
-#### 🛬 3 UAE Arrival Gateways & Ground Transport Estimates
+#### 🛬 2 Dubai-Area Arrival Gateways & Ground Transport Estimates
 | Code | Gateway Name | Destination City | Ground Transport Differential to Central Dubai |
 | :---: | :--- | :--- | :--- |
 | **DXB** | Dubai International Airport | Dubai, UAE | **₹0** *(Direct arrival in city center, Metro Red/Green line)* |
 | **SHJ** | Sharjah International Airport | Sharjah, UAE | **+₹500** *(Intercity express bus or shared taxi to Dubai)* |
-| **AUH** | Zayed International Airport | Abu Dhabi, UAE | **+₹1,800** *(Airport express coach or private taxi to Dubai)* |
 
 ---
 
