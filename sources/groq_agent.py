@@ -31,9 +31,20 @@ class GroqFlightExtractorAgent:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.environ.get("GROQ_API_KEY", "")
         self.client = None
+        self.active_model = "openai/gpt-oss-120b"
         if GROQ_AVAILABLE and self.api_key:
             try:
                 self.client = groq.Groq(api_key=self.api_key)
+                # Auto-discover working model
+                try:
+                    models = [m.id for m in self.client.models.list().data]
+                    preferred = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b", "groq/compound", "groq/compound-mini"]
+                    for p in preferred:
+                        if p in models:
+                            self.active_model = p
+                            break
+                except Exception:
+                    pass
             except Exception as e:
                 print(f"[Groq Client Init Error] {e}")
 
@@ -111,7 +122,7 @@ Output ONLY valid JSON in the following format, with no markdown code fences or 
                         "content": prompt
                     }
                 ],
-                model="llama-3.3-70b-versatile",
+                model=self.active_model,
                 temperature=0.0,
                 response_format={"type": "json_object"} if hasattr(self.client, "response_format") else None
             )
