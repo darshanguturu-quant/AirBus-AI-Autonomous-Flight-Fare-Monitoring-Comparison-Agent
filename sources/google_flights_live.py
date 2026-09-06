@@ -107,7 +107,6 @@ def _query_single_route(
     max_stops: int,
     max_duration_hours: int,
     cabin: str,
-    baggage_pref: str,
     scan_id: str
 ) -> Tuple[str, str, str, List[Dict[str, Any]], int, str]:
     """
@@ -248,14 +247,6 @@ def _query_single_route(
                 taxes = round(raw_price * 0.18, 2)
                 fees = round(raw_price - base_fare - taxes, 2)
 
-                # Baggage policy
-                baggage_inc = "Standard Cabin 7kg"
-                if "20kg" in baggage_pref or "30kg" in baggage_pref:
-                    if primary_airline.lower() in ["indigo", "spicejet"]:
-                        baggage_inc = "7kg Cabin only (Checked bag fee applies at checkout)"
-                    else:
-                        baggage_inc = "20kg Included on International Saver"
-
                 # Deep links pre-populated with exact tfs URL
                 deep_links = build_exact_deep_links(dep, arr, travel_date, primary_airline, tfs_url=tfs_url)
 
@@ -287,7 +278,7 @@ def _query_single_route(
                     "taxes": taxes,
                     "fees": fees,
                     "baggage_cost": 0.0,
-                    "baggage_included": baggage_inc,
+                    "baggage_included": "",
                     "airfare_total": raw_price,
                     "currency": "INR",
                     "original_currency": "INR",
@@ -379,7 +370,6 @@ def fetch_live_google_flights(
                 config.maximum_stops,
                 config.maximum_journey_duration_hours,
                 config.cabin,
-                config.baggage,
                 scan_id
             ): (dep, arr, dt)
             for dep, arr, dt in tasks

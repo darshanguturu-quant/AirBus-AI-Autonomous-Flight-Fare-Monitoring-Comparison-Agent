@@ -144,8 +144,8 @@
         <div class="section-title-wrap">
           <h1 class="section-title">TOP 5 CHEAPEST FLIGHTS TO DUBAI AREA</h1>
           <p class="section-desc">
-            Ranked by <strong class="text-highlight">Total Realistic Effective Cost</strong>
-            (Base Fare + Mandatory Taxes & Fees + Baggage + Dubai Ground Transport Differential).
+            Ranked strictly by <strong class="text-highlight">Exact Live Airfare</strong>
+            (Direct live prices from approved flight portals with zero markups).
           </p>
         </div>
         <div class="section-meta">
@@ -198,9 +198,8 @@
               <th>Airline & Flight</th>
               <th>Stops</th>
               <th>Duration</th>
-              <th>Airfare (Taxes + Bag)</th>
-              <th>Dubai Ground Transport</th>
-              <th>Total Realistic Fare</th>
+              <th>Airfare (Base + Taxes)</th>
+              <th>Total Live Fare</th>
               <th>Verified Source</th>
               <th>Action</th>
             </tr>
@@ -209,51 +208,6 @@
             <!-- Dynamically rendered -->
           </tbody>
         </table>
-      </div>
-    </section>
-
-    <!-- SECTION 17: DUBAI GROUND TRANSPORT ARBITRAGE CALCULATOR -->
-    <section class="arbitrage-section">
-      <div class="section-header">
-        <div class="section-title-wrap">
-          <h2 class="section-title">DUBAI GROUND TRANSPORT ARBITRAGE</h2>
-          <p class="section-desc">
-            Section 17 Analysis: Flying to Sharjah (SHJ) can be significantly cheaper than Dubai International (DXB), even after factoring in taxi/coach ground transport to central Dubai.
-          </p>
-        </div>
-      </div>
-
-      <div class="arbitrage-grid" id="arbitrage-cards">
-        <!-- DXB Card -->
-        <div class="arbitrage-card" id="arb-card-dxb">
-          <div class="arb-card-header">
-            <span class="airport-code-badge badge-dxb">DXB</span>
-            <span class="airport-name">Dubai International</span>
-          </div>
-          <div class="arb-price-breakdown">
-            <div class="arb-row"><span>Cheapest Airfare:</span> <strong id="arb-dxb-airfare">₹--</strong></div>
-            <div class="arb-row"><span>Ground Transport to Dubai:</span> <span class="tag tag-free">₹0 (Arrives in Dubai)</span></div>
-            <div class="arb-divider"></div>
-            <div class="arb-total-row"><span>Total Effective:</span> <span class="arb-total-cost" id="arb-dxb-total">₹--</span></div>
-          </div>
-          <div class="arb-badge-footer">Direct City Center Arrival</div>
-        </div>
-
-        <!-- SHJ Card -->
-        <div class="arbitrage-card highlighted-arbitrage" id="arb-card-shj">
-          <div class="arb-card-header">
-            <span class="airport-code-badge badge-shj">SHJ</span>
-            <span class="airport-name">Sharjah International</span>
-            <span class="badge badge-saving" id="shj-saving-badge">BEST VALUE</span>
-          </div>
-          <div class="arb-price-breakdown">
-            <div class="arb-row"><span>Cheapest Airfare:</span> <strong id="arb-shj-airfare">₹--</strong></div>
-            <div class="arb-row"><span>Ground Transport to Dubai:</span> <span class="tag tag-cost">+₹500 (Express Taxi/Bus)</span></div>
-            <div class="arb-divider"></div>
-            <div class="arb-total-row"><span>Total Effective:</span> <span class="arb-total-cost" id="arb-shj-total">₹--</span></div>
-          </div>
-          <div class="arb-badge-footer" id="shj-comparison-text">Evaluating Ground Savings...</div>
-        </div>
       </div>
     </section>
 
@@ -281,7 +235,7 @@
       <div class="section-header">
         <div class="section-title-wrap">
           <h2 class="section-title">PRICE ALERTS & CHANGE LOG</h2>
-          <p class="section-desc">Real-time notifications for price drops ≥ ₹300, new cheapest routes, and Top 5 entrants.</p>
+          <p class="section-desc">Real-time notifications for significant price drops, new cheapest routes, and Top 5 entrants.</p>
         </div>
       </div>
       <div class="alerts-list-card" id="alerts-list-container">
@@ -300,21 +254,12 @@
       <div class="modal-body">
         <form id="config-form" onsubmit="handleConfigSubmit(event)">
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group" style="grid-column: span 2;">
               <label for="cfg-travel-date">Anchor Travel Date (7 Consecutive Days Monitored)</label>
               <input type="date" id="cfg-travel-date" class="form-input" required>
               <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; display: block;">
                 The agent continuously tracks 7 consecutive travel dates (Day 1 through Day 7) starting from this date.
               </small>
-            </div>
-            <div class="form-group">
-              <label for="cfg-baggage">Baggage Preference</label>
-              <select id="cfg-baggage" class="form-select">
-                <option value="Cabin Only (7kg)">Cabin Only (7kg)</option>
-                <option value="15kg Checked Bag">15kg Checked Bag</option>
-                <option value="20kg Checked Bag" selected>20kg Checked Bag</option>
-                <option value="30kg Checked Bag">30kg Checked Bag</option>
-              </select>
             </div>
           </div>
 
@@ -334,7 +279,7 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group" style="grid-column: span 2;">
               <label for="cfg-refresh-interval">Autonomous Refresh Interval (Seconds)</label>
               <select id="cfg-refresh-interval" class="form-select">
                 <option value="60">1 Minute (Fast Test)</option>
@@ -343,10 +288,6 @@
                 <option value="600">10 Minutes</option>
                 <option value="900">15 Minutes</option>
               </select>
-            </div>
-            <div class="form-group">
-              <label for="cfg-alert-threshold">Alert Drop Threshold (₹)</label>
-              <input type="number" id="cfg-alert-threshold" class="form-input" min="50" max="5000" value="300">
             </div>
           </div>
 
@@ -358,18 +299,6 @@
               <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">
                 Groq uses <code>llama-3.3-70b-versatile</code> to extract authentic live airfare data directly from approved flight domains with zero fabrication.
               </small>
-            </div>
-          </div>
-
-          <div class="form-section-title">Dubai Ground Transport Estimates (INR to Dubai Downtown)</div>
-          <div class="form-row two-cols">
-            <div class="form-group">
-              <label for="cfg-gt-dxb">DXB Ground Cost</label>
-              <input type="number" id="cfg-gt-dxb" class="form-input" value="0">
-            </div>
-            <div class="form-group">
-              <label for="cfg-gt-shj">SHJ Ground Cost</label>
-              <input type="number" id="cfg-gt-shj" class="form-input" value="500">
             </div>
           </div>
 

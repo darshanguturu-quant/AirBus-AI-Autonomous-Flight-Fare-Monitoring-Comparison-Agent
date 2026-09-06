@@ -92,12 +92,12 @@ def detect_price_changes_and_alerts(
             "timestamp": now_str
         })
 
-    # --- Condition B: Existing cheapest fare drops significantly (>= ₹300 or >= 5%) ---
+    # --- Condition B: Existing cheapest fare drops significantly (>= 5%) ---
     elif current_cheapest["itinerary_id"] == prev_cheapest["itinerary_id"]:
         drop_amount = round(prev_lowest_price - curr_lowest_price, 2)
         pct_drop = round((drop_amount / prev_lowest_price) * 100, 2) if prev_lowest_price > 0 else 0.0
 
-        if drop_amount >= config.alert_price_drop_absolute or pct_drop >= config.alert_price_drop_percentage:
+        if pct_drop >= getattr(config, "alert_price_drop_percentage", 5.0):
             alerts.append({
                 "scan_id": scan_id,
                 "alert_type": "PRICE_DROP",

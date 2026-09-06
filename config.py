@@ -32,12 +32,6 @@ DESTINATION_AIRPORTS: Dict[str, Dict[str, str]] = {
     "SHJ": {"name": "Sharjah International Airport", "city": "Sharjah", "country": "UAE"},
 }
 
-# Ground transport estimates to Dubai Downtown/Central (INR)
-DEFAULT_GROUND_TRANSPORT_INR: Dict[str, float] = {
-    "DXB": 0.0,      # Direct arrival in Dubai
-    "SHJ": 500.0,    # Intercity bus / shared taxi Sharjah to Dubai
-}
-
 # Domestic Indian Carriers (to be filtered/de-prioritized when focusing on International Airlines)
 INDIAN_AIRLINES: set = {
     "indigo",
@@ -124,12 +118,12 @@ STRICTLY_DISALLOWED_PATTERNS: List[str] = [
 
 class MonitorConfig(BaseModel):
     """User Configuration with full customization and persistence."""
+    model_config = {"extra": "ignore"}
     departure_region: str = "South India"
     destination: str = "Dubai (DXB, SHJ)"
     cabin: str = "Economy"
     travel_date: str = Field(default_factory=lambda: (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d"))
     passengers: int = 1
-    baggage: str = "20kg Checked Bag"  # Options: 'Cabin Only (7kg)', '15kg Checked Bag', '20kg Checked Bag', '30kg Checked Bag'
     maximum_stops: int = 2
     maximum_journey_duration_hours: int = 24
     refresh_interval_seconds: int = 300  # 5 minutes
@@ -137,9 +131,7 @@ class MonitorConfig(BaseModel):
     consecutive_days: int = 7  # Monitor 7 consecutive dates (full 7-day week) for price comparison
     departure_airports: List[str] = list(SOUTH_INDIA_AIRPORTS.keys())
     destination_airports: List[str] = list(DESTINATION_AIRPORTS.keys())
-    ground_transport_costs: Dict[str, float] = Field(default_factory=lambda: DEFAULT_GROUND_TRANSPORT_INR.copy())
     prefer_international_airlines: bool = True  # Focus primarily on International Airlines (Emirates, Air Arabia, flydubai, etc.)
-    alert_price_drop_absolute: float = 300.0  # ₹300
     alert_price_drop_percentage: float = 5.0   # 5%
     auto_refresh_enabled: bool = True
     enable_live_google_flights: bool = True

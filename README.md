@@ -195,9 +195,8 @@ The persistent database `flight_monitor.db` maintains full state and time-series
     * **Major OTAs** (Reliability Score: 60)
   * Permanently blocks forums, social media, and unverified blogs.
 * **`engine/normalizer.py`**:
-  * Preserves live quoted website airfare verbatim in INR.
-  * Adds ground transport differential based on destination airport (`DXB`, `SHJ`, or `AUH`).
-  * Calculates `total_effective_price = airfare_total + ground_transport_cost`.
+  * Preserves live quoted website airfare verbatim in INR (100% price match to provider).
+  * Calculates `total_effective_price = airfare_total` with zero artificial markups.
 * **`engine/deduplicator.py`**:
   * Detects identical flights quoted across multiple portals (same route, airline, flight number, departure time).
   * Consolidates them into a single record, selects the lowest verified price, and retains audit traces of all sources checked.
@@ -357,12 +356,11 @@ flowchart TD
 
 ---
 
-### The Effective Travel Cost & Ground Transport Formula
+### Pure Live Airfare Matching Principle
 
-$$\text{Total Effective Cost} = \text{Base Airfare} + \text{Taxes \& Fees} + \text{Baggage Cost} + \text{Ground Transport Differential}$$
+$$\text{Total Fare} = \text{Base Airfare} + \text{Mandatory Taxes \& Carrier Fees}$$
 
-Where the ground transport differential is:
-$$\text{Ground Transport Differential} = \begin{cases} \text{₹}0 & \text{if arriving at DXB (Dubai International)} \\ \text{₹}500 & \text{if arriving at SHJ (Sharjah International)} \\ \text{₹}1,800 & \text{if arriving at AUH (Zayed International, Abu Dhabi)} \end{cases}$$
+All fares displayed in AirBus AI strictly match the exact live ticket prices as quoted on approved airline portals and Google Flights down to the single rupee, with no artificial markups or ground transport surcharges added.
 
 ---
 
@@ -443,7 +441,7 @@ python -m pytest tests/ -v
 * ✅ `test_domain_extractor`: Validates URL domain extraction and protocol normalization.
 * ✅ `test_allowlist_approved_sources`: Verifies official airlines, metasearch, and OTAs are accepted.
 * ✅ `test_allowlist_blocks_disallowed_sources`: Confirms rejection of Reddit, Twitter/X, and forums.
-* ✅ `test_price_normalization_and_ground_transport`: Tests base fare, tax, and Dubai ground cost addition.
+* ✅ `test_price_normalization`: Tests base fare, tax, and total airfare normalization.
 * ✅ `test_deduplication`: Confirms multi-source duplicate consolidation and lowest fare selection.
 * ✅ `test_ranking_top5_and_constraints`: Enforces stop limits, max duration, and ranking order.
 * ✅ `test_alert_logic`: Verifies drop threshold alerts and entrant detection.
@@ -473,12 +471,10 @@ In strict adherence to zero-fabrication and data authenticity standards, AirBus 
 Click the **Configure (⚙️)** button in the dashboard top navigation bar to adjust your search settings in real time:
 
 * **Anchor Travel Date**: Starting date for the 7 consecutive days search.
-* **Baggage Preference**: `Cabin Only (7kg)`, `15kg Checked Bag`, `20kg Checked Bag`, or `30kg Checked Bag`.
 * **Maximum Stops**: `Non-stop only`, `Up to 1 stop`, or `Up to 2 stops`.
 * **Maximum Journey Duration**: Custom hour ceiling (default: 24h).
 * **Refresh Interval**: 1 minute, 2 minutes, 5 minutes, 10 minutes, or 15 minutes.
-* **Alert Drop Threshold**: Minimum price drop in INR to trigger alerts (default: ₹300).
-* **Dubai Ground Transport Costs**: Adjust transfer estimates for `DXB`, `SHJ`, and `AUH`.
+* **Focus Primarily on International Airlines**: Prioritize premium international carriers (Emirates, Air Arabia, flydubai, etc.) over domestic low-cost carriers.
 * **Monitored Airport Selector**: Select or deselect individual South Indian departure airports.
 * **Groq API Key**: Optional field for AI-assisted extraction using `llama-3.3-70b-versatile`.
 

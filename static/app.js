@@ -173,7 +173,6 @@ async function loadTop5() {
     }
     applyDateFilter();
     renderHUD(data);
-    updateArbitrageCalculator(currentTop5);
   } catch (e) {
     console.error("Failed to load Top 5:", e);
   }
@@ -193,7 +192,7 @@ function renderHUD(data) {
     if (priceEl) priceEl.textContent = `₹${cheapest.total_effective_price.toLocaleString('en-IN')}`;
     if (routeEl) routeEl.textContent = `${cheapest.departure_airport} ➔ ${cheapest.arrival_airport} (${cheapest.airline})`;
     if (breakdownEl) {
-      breakdownEl.textContent = `Airfare ₹${cheapest.airfare_total.toLocaleString('en-IN')} + Ground ₹${cheapest.ground_transport_cost}`;
+      breakdownEl.textContent = `Live Fare: ₹${cheapest.airfare_total.toLocaleString('en-IN')}`;
     }
 
     if (cheapest.price_difference && cheapest.price_difference !== 0) {
@@ -266,7 +265,7 @@ function renderDatesComparison(data) {
         : 'Unavailable';
 
       const priceSub = info.has_flights
-        ? `Airfare ₹${info.airfare.toLocaleString('en-IN')} + Ground ₹${info.ground}`
+        ? `Live Airfare ₹${info.airfare.toLocaleString('en-IN')}`
         : 'No direct live flights';
 
       const routeText = info.has_flights
@@ -489,28 +488,17 @@ function renderFlightCard(f) {
           <span>${f.airline}</span>
           <span class="flight-code">(${f.flight_number})</span>
         </div>
-        <div class="carrier-baggage">
-          🧳 ${f.baggage_included || 'Standard Cabin 7kg'}
-        </div>
       </div>
 
       <!-- Price Normalization Breakdown -->
       <div class="cost-breakdown-box">
-        <div class="cost-row" style="color: #fff; font-weight: 700; font-size: 0.9rem;">
-          <span>Live Airfare on Website:</span>
-          <span style="color: #4ade80; font-family: var(--font-heading); font-size: 1.1rem;">₹${f.airfare_total.toLocaleString('en-IN')}</span>
+        <div class="cost-row" style="color: #fff; font-weight: 700; font-size: 0.95rem;">
+          <span>Live Airfare:</span>
+          <span style="color: #4ade80; font-family: var(--font-heading); font-size: 1.25rem;">₹${f.airfare_total.toLocaleString('en-IN')}</span>
         </div>
         <div class="cost-row" style="font-size: 0.76rem; color: var(--text-muted);">
-          <span>Includes mandatory taxes & carrier surcharges</span>
-          <span>Exact site price</span>
-        </div>
-        <div class="cost-row ground-transport">
-          <span>Dubai Ground Transport (${f.arrival_airport} ➔ Central Dubai):</span>
-          <span>${f.ground_transport_cost === 0 ? '₹0 (Direct)' : `+₹${f.ground_transport_cost.toLocaleString('en-IN')}`}</span>
-        </div>
-        <div class="total-fare-row">
-          <span class="total-fare-label">Total Effective Travel Cost:</span>
-          <span class="total-fare-amount">₹${f.total_effective_price.toLocaleString('en-IN')}</span>
+          <span>Includes all mandatory taxes & carrier fees</span>
+          <span>100% Exact Live Fare</span>
         </div>
       </div>
 
@@ -562,7 +550,6 @@ function renderTableRow(f) {
       <td>${f.stops === 0 ? 'Non-stop' : `${f.stops} stop`}</td>
       <td>${durationStr}</td>
       <td>₹${f.airfare_total.toLocaleString('en-IN')}</td>
-      <td>${f.ground_transport_cost === 0 ? '₹0' : `+₹${f.ground_transport_cost}`}</td>
       <td><strong style="color: var(--accent-cyan);">₹${f.total_effective_price.toLocaleString('en-IN')}</strong></td>
       <td>
         <span class="tag tag-cost">${f.source_name}</span>
@@ -575,43 +562,6 @@ function renderTableRow(f) {
       </td>
     </tr>
   `;
-}
-
-// Section 17 Arbitrage Calculator (DXB vs SHJ)
-function updateArbitrageCalculator(flights) {
-  const dxbFlights = flights.filter(f => f.arrival_airport === "DXB");
-  const shjFlights = flights.filter(f => f.arrival_airport === "SHJ");
-
-  const minDxb = dxbFlights.length > 0 ? dxbFlights[0] : null;
-  const minShj = shjFlights.length > 0 ? shjFlights[0] : null;
-
-  // DXB
-  const dxbAirfareEl = document.getElementById("arb-dxb-airfare");
-  const dxbTotalEl = document.getElementById("arb-dxb-total");
-  if (minDxb && dxbAirfareEl && dxbTotalEl) {
-    dxbAirfareEl.textContent = `₹${minDxb.airfare_total.toLocaleString('en-IN')}`;
-    dxbTotalEl.textContent = `₹${minDxb.total_effective_price.toLocaleString('en-IN')}`;
-  }
-
-  // SHJ
-  const shjAirfareEl = document.getElementById("arb-shj-airfare");
-  const shjTotalEl = document.getElementById("arb-shj-total");
-  const shjBadgeEl = document.getElementById("shj-saving-badge");
-  const shjCompEl = document.getElementById("shj-comparison-text");
-
-  if (minShj && shjAirfareEl && shjTotalEl) {
-    shjAirfareEl.textContent = `₹${minShj.airfare_total.toLocaleString('en-IN')}`;
-    shjTotalEl.textContent = `₹${minShj.total_effective_price.toLocaleString('en-IN')}`;
-
-    if (minDxb && minShj.total_effective_price < minDxb.total_effective_price) {
-      const saving = minDxb.total_effective_price - minShj.total_effective_price;
-      const pct = ((saving / minDxb.total_effective_price) * 100).toFixed(1);
-      if (shjBadgeEl) shjBadgeEl.textContent = `SAVES ₹${saving.toLocaleString('en-IN')}`;
-      if (shjCompEl) shjCompEl.textContent = `⭐ Flying to Sharjah + ₹500 taxi is ₹${saving.toLocaleString('en-IN')} (${pct}%) cheaper than DXB!`;
-    } else {
-      if (shjCompEl) shjCompEl.textContent = `Sharjah route competitive with DXB direct.`;
-    }
-  }
 }
 
 // Chart Visualization
@@ -800,19 +750,9 @@ async function loadConfig() {
 
     // Populate inputs
     document.getElementById("cfg-travel-date").value = currentConfig.travel_date;
-    document.getElementById("cfg-baggage").value = currentConfig.baggage;
     document.getElementById("cfg-max-stops").value = currentConfig.maximum_stops;
     document.getElementById("cfg-max-duration").value = currentConfig.maximum_journey_duration_hours;
     document.getElementById("cfg-refresh-interval").value = currentConfig.refresh_interval_seconds;
-    document.getElementById("cfg-alert-threshold").value = currentConfig.alert_price_drop_absolute;
-
-    const gt = currentConfig.ground_transport_costs || {};
-    if (document.getElementById("cfg-gt-dxb")) {
-      document.getElementById("cfg-gt-dxb").value = gt.DXB !== undefined ? gt.DXB : 0;
-    }
-    if (document.getElementById("cfg-gt-shj")) {
-      document.getElementById("cfg-gt-shj").value = gt.SHJ !== undefined ? gt.SHJ : 500;
-    }
 
     const preferIntlEl = document.getElementById("cfg-prefer-intl");
     if (preferIntlEl) {
@@ -865,15 +805,9 @@ async function handleConfigSubmit(e) {
   const updatedConfig = {
     ...currentConfig,
     travel_date: document.getElementById("cfg-travel-date").value,
-    baggage: document.getElementById("cfg-baggage").value,
     maximum_stops: parseInt(document.getElementById("cfg-max-stops").value, 10),
     maximum_journey_duration_hours: parseInt(document.getElementById("cfg-max-duration").value, 10),
     refresh_interval_seconds: parseInt(document.getElementById("cfg-refresh-interval").value, 10),
-    alert_price_drop_absolute: parseFloat(document.getElementById("cfg-alert-threshold").value),
-    ground_transport_costs: {
-      "DXB": parseFloat(document.getElementById("cfg-gt-dxb").value) || 0,
-      "SHJ": parseFloat(document.getElementById("cfg-gt-shj").value) || 500
-    },
     prefer_international_airlines: document.getElementById("cfg-prefer-intl") ? document.getElementById("cfg-prefer-intl").checked : true,
     destination_airports: ["DXB", "SHJ"],
     destination: "Dubai (DXB, SHJ)",

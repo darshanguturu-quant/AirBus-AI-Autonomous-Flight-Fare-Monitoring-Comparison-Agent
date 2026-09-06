@@ -62,9 +62,9 @@ def test_cheapest_date_determination_and_savings():
         # Day 1: 2026-09-20
         {"itinerary_id": "f1", "travel_date": "2026-09-20", "total_effective_price": 18471.0, "airfare_total": 18471.0, "ground_transport_cost": 0.0, "departure_airport": "BLR", "arrival_airport": "DXB", "airline": "IndiGo", "stops": 0, "duration_minutes": 240, "availability_status": "available"},
         # Day 2: 2026-09-21
-        {"itinerary_id": "f2", "travel_date": "2026-09-21", "total_effective_price": 15577.0, "airfare_total": 15077.0, "ground_transport_cost": 500.0, "departure_airport": "HYD", "arrival_airport": "SHJ", "airline": "Air Arabia", "stops": 0, "duration_minutes": 230, "availability_status": "available"},
+        {"itinerary_id": "f2", "travel_date": "2026-09-21", "total_effective_price": 15077.0, "airfare_total": 15077.0, "ground_transport_cost": 0.0, "departure_airport": "HYD", "arrival_airport": "SHJ", "airline": "Air Arabia", "stops": 0, "duration_minutes": 230, "availability_status": "available"},
         # Day 3: 2026-09-22
-        {"itinerary_id": "f3", "travel_date": "2026-09-22", "total_effective_price": 12453.0, "airfare_total": 11953.0, "ground_transport_cost": 500.0, "departure_airport": "HYD", "arrival_airport": "SHJ", "airline": "Air Arabia", "stops": 0, "duration_minutes": 230, "availability_status": "available"},
+        {"itinerary_id": "f3", "travel_date": "2026-09-22", "total_effective_price": 11953.0, "airfare_total": 11953.0, "ground_transport_cost": 0.0, "departure_airport": "HYD", "arrival_airport": "SHJ", "airline": "Air Arabia", "stops": 0, "duration_minutes": 230, "availability_status": "available"},
     ]
 
     dates = ["2026-09-20", "2026-09-21", "2026-09-22"]
@@ -81,5 +81,5 @@ def test_cheapest_date_determination_and_savings():
     overall_cheapest_date = next(dt for dt in dates if cheapest_by_date[dt]["total_effective_price"] == min_price)
 
     assert overall_cheapest_date == "2026-09-22"
-    assert min_price == 12453.0
-    assert max_savings == 18471.0 - 12453.0  # ₹6,018 saved vs Day 1
+    assert min_price == 11953.0
+    assert max_savings == 18471.0 - 11953.0  # ₹6,518 saved vs Day 1

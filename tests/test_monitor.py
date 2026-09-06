@@ -63,9 +63,8 @@ def test_allowlist_blocks_disallowed_sources():
     assert approved is False
 
 
-def test_price_normalization_and_ground_transport():
+def test_price_normalization():
     cfg = MonitorConfig()
-    cfg.ground_transport_costs = {"DXB": 0.0, "SHJ": 500.0}
 
     # Flight 1: to DXB
     raw_dxb = {
@@ -74,30 +73,30 @@ def test_price_normalization_and_ground_transport():
         "base_fare": 6000.0,
         "taxes": 1800.0,
         "fees": 400.0,
-        "baggage_cost": 0.0,
         "currency": "INR"
     }
     norm_dxb = normalize_flight(raw_dxb, cfg)
     assert norm_dxb["airfare_total"] == 8200.0
     assert norm_dxb["ground_transport_cost"] == 0.0
+    assert norm_dxb["baggage_cost"] == 0.0
     assert norm_dxb["total_effective_price"] == 8200.0
 
-    # Flight 2: to SHJ (Sharjah) with ₹500 ground transport
+    # Flight 2: to SHJ (Sharjah) - pure airfare without artificial ground markups
     raw_shj = {
         "itinerary_id": "flight_shj_1",
         "arrival_airport": "SHJ",
         "base_fare": 5500.0,
         "taxes": 1600.0,
         "fees": 400.0,
-        "baggage_cost": 0.0,
         "currency": "INR"
     }
     norm_shj = normalize_flight(raw_shj, cfg)
     assert norm_shj["airfare_total"] == 7500.0
-    assert norm_shj["ground_transport_cost"] == 500.0
-    assert norm_shj["total_effective_price"] == 8000.0
+    assert norm_shj["ground_transport_cost"] == 0.0
+    assert norm_shj["baggage_cost"] == 0.0
+    assert norm_shj["total_effective_price"] == 7500.0
 
-    # Notice: Even with ₹500 ground transport, SHJ (₹8000) is cheaper than DXB (₹8200)!
+    # SHJ airfare (₹7500) is cheaper than DXB (₹8200)
     assert norm_shj["total_effective_price"] < norm_dxb["total_effective_price"]
 
 
@@ -170,7 +169,7 @@ def test_ranking_top5_and_constraints():
 
 
 def test_alert_logic():
-    cfg = MonitorConfig(alert_price_drop_absolute=300.0, alert_price_drop_percentage=5.0)
+    cfg = MonitorConfig(alert_price_drop_percentage=5.0)
 
     # Previous scan top 1
     prev_top5 = [

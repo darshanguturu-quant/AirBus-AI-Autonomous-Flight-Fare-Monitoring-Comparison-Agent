@@ -165,16 +165,21 @@ def get_config() -> MonitorConfig:
             data = json.loads(row["config_json"])
             if "consecutive_days" not in data or data["consecutive_days"] < 7:
                 data["consecutive_days"] = 7
+            # Remove obsolete fields: baggage, ground_transport_costs, alert_price_drop_absolute
+            data.pop("baggage", None)
+            data.pop("ground_transport_costs", None)
+            data.pop("alert_price_drop_absolute", None)
             # Remove AUH airport as destination
             if "destination_airports" in data and "AUH" in data["destination_airports"]:
                 data["destination_airports"] = [a for a in data["destination_airports"] if a != "AUH"]
-            if "ground_transport_costs" in data and "AUH" in data["ground_transport_costs"]:
-                data["ground_transport_costs"].pop("AUH", None)
             if "destination" in data and "AUH" in data["destination"]:
                 data["destination"] = "Dubai (DXB, SHJ)"
             if "prefer_international_airlines" not in data:
                 data["prefer_international_airlines"] = True
-            cfg = MonitorConfig(**data)
+            valid_keys = MonitorConfig.model_fields.keys()
+            filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+            cfg = MonitorConfig(**filtered_data)
+            save_config(cfg)
             return cfg
         except Exception:
             pass
