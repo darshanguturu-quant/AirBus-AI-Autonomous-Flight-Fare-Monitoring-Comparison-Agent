@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AirBus AI — Autonomous Flight Fare Monitoring & Comparison Agent (South India to Dubai)</title>
+  <meta name="description" content="Autonomous AI flight monitor tracking the 5 cheapest economy flights from 15 South Indian airports to Dubai (DXB, SHJ, AUH) every 5 minutes with total effective cost normalization.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=7dates">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="brand-group">
+        <div class="radar-pulse-icon" id="radar-beacon">
+          <div class="radar-core"></div>
+          <div class="radar-ring"></div>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">
+            <span class="brand-accent">AIRBUS</span> MONITOR
+            <span class="badge badge-ai">AUTONOMOUS AGENT</span>
+          </div>
+          <div class="brand-subtitle">South India ➔ Dubai Area (DXB · SHJ · AUH) • 5-Min Refresh</div>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Live Countdown Timer -->
+        <div class="countdown-pill" id="countdown-pill" title="Autonomous scan runs every 5 minutes">
+          <span class="countdown-label">NEXT SCAN:</span>
+          <span class="countdown-digits" id="timer-display">05:00</span>
+          <div class="timer-progress-bar"><div class="timer-progress-fill" id="timer-fill"></div></div>
+        </div>
+
+        <!-- Scan Now Button -->
+        <button class="btn btn-primary" id="btn-scan-now" onclick="triggerManualScan()">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-text" id="scan-btn-text">Scan Now</span>
+        </button>
+
+        <!-- Config Trigger -->
+        <button class="btn btn-secondary" id="btn-config-open" onclick="openModal('config-modal')">
+          <span class="btn-icon">⚙️</span>
+          <span>Configure</span>
+        </button>
+
+        <!-- Audit Log Trigger -->
+        <button class="btn btn-secondary" id="btn-audit-open" onclick="openModal('audit-modal')">
+          <span class="btn-icon">🛡️</span>
+          <span>Audit & Sources</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Dashboard Container -->
+  <main class="main-content">
+    <!-- Active Alert Banner (Hidden when none) -->
+    <div class="alert-banner hidden" id="alert-banner">
+      <div class="alert-banner-content">
+        <span class="alert-icon" id="alert-banner-icon">🚨</span>
+        <div class="alert-message" id="alert-banner-text">New cheaper flight detected!</div>
+      </div>
+      <button class="alert-close-btn" onclick="dismissBanner()">✕</button>
+    </div>
+
+    <!-- HUD Stats Bar -->
+    <section class="hud-stats-grid" id="hud-stats">
+      <div class="stat-card stat-card-gold">
+        <div class="stat-card-header">
+          <span class="stat-label">#1 CHEAPEST EFFECTIVE ROUTE</span>
+          <span class="stat-badge">LOWEST TOTAL</span>
+        </div>
+        <div class="stat-primary-value" id="hud-cheapest-price">₹--</div>
+        <div class="stat-subtext" id="hud-cheapest-route">Searching South India...</div>
+        <div class="stat-footer-detail" id="hud-cheapest-breakdown">Airfare + Dubai Transport</div>
+      </div>
+
+      <div class="stat-card stat-card-cyan">
+        <div class="stat-card-header">
+          <span class="stat-label">PRICE CHANGE (VS LAST SCAN)</span>
+          <span class="stat-badge">24H / 5-MIN DELTA</span>
+        </div>
+        <div class="stat-primary-value" id="hud-price-drop">₹0 (0%)</div>
+        <div class="stat-subtext" id="hud-price-drop-detail">Comparing consecutive scans</div>
+        <div class="stat-footer-detail" id="hud-scan-status">Monitoring 15 departure hubs</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-label">DEPARTURE AIRPORTS</span>
+          <span class="stat-badge">15 ACTIVE HUBS</span>
+        </div>
+        <div class="stat-primary-value">15 Hubs</div>
+        <div class="stat-subtext">MAA, BLR, HYD, COK, TRV + 10 more</div>
+        <div class="stat-footer-detail">Kerala, Tamil Nadu, Karnataka, AP, Tel.</div>
+      </div>
+
+      <div class="stat-card stat-card-green">
+        <div class="stat-card-header">
+          <span class="stat-label">APPROVED DATA SOURCES</span>
+          <span class="stat-badge">100% ALLOWLISTED</span>
+        </div>
+        <div class="stat-primary-value">18 Sources</div>
+        <div class="stat-subtext">Official Airlines + Verified Metasearch</div>
+        <div class="stat-footer-detail">Zero Social Media / Strict Domain Filter</div>
+      </div>
+    </section>
+
+    <!-- SECTION: 7 CONSECUTIVE DATES PRICE COMPARISON -->
+    <section class="dates-comparison-section" id="dates-comparison-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">📅 7 CONSECUTIVE DATES FARE COMPARISON</h2>
+          <p class="section-desc">
+            Compares a full 7-day week of consecutive travel dates to identify the absolute cheapest day with live airfares and verified savings.
+          </p>
+        </div>
+        <div class="dates-winner-summary" id="dates-winner-summary">
+          <span class="winner-pulse"></span>
+          <span id="winner-summary-text">Evaluating 7 consecutive travel dates...</span>
+        </div>
+      </div>
+
+      <!-- 7-Date Cards Grid -->
+      <div class="dates-grid" id="dates-cards-grid">
+        <div class="date-compare-card skeleton-card"><div class="skeleton-line full"></div><div class="skeleton-line half"></div></div>
+        <div class="date-compare-card skeleton-card"><div class="skeleton-line full"></div><div class="skeleton-line half"></div></div>
+        <div class="date-compare-card skeleton-card"><div class="skeleton-line full"></div><div class="skeleton-line half"></div></div>
+        <div class="date-compare-card skeleton-card"><div class="skeleton-line full"></div><div class="skeleton-line half"></div></div>
+        <div class="date-compare-card skeleton-card"><div class="skeleton-line full"></div><div class="skeleton-line half"></div></div>
+        <div class="date-compare-card skeleton-card"><div class="skeleton-line full"></div><div class="skeleton-line half"></div></div>
+        <div class="date-compare-card skeleton-card"><div class="skeleton-line full"></div><div class="skeleton-line half"></div></div>
+      </div>
+    </section>
+
+    <!-- TOP 5 CHEAPEST FLIGHTS SECTION -->
+    <section class="results-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h1 class="section-title">TOP 5 CHEAPEST FLIGHTS TO DUBAI AREA</h1>
+          <p class="section-desc">
+            Ranked by <strong class="text-highlight">Total Realistic Effective Cost</strong>
+            (Base Fare + Mandatory Taxes & Fees + Baggage + Dubai Ground Transport Differential).
+          </p>
+        </div>
+        <div class="section-meta">
+          <div class="live-pill">
+            <span class="pulse-dot"></span>
+            <span id="last-updated-text">Updating...</span>
+          </div>
+          <div class="view-toggle">
+            <button class="toggle-btn active" id="view-cards-btn" onclick="setViewMode('cards')">Cards</button>
+            <button class="toggle-btn" id="view-table-btn" onclick="setViewMode('table')">Table</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7-Date Filter Tabs Bar -->
+      <div class="date-filter-bar" id="date-filter-bar">
+        <span class="filter-label">Filter Flights by Date:</span>
+        <div class="filter-pills-wrap" id="date-filter-pills">
+          <button class="date-pill active" id="pill-date-all" onclick="filterByDate('all')">
+            🔥 All 7 Dates (Overall Top 5)
+          </button>
+          <button class="date-pill" id="pill-date-0" onclick="filterByDateIndex(0)">Day 1</button>
+          <button class="date-pill" id="pill-date-1" onclick="filterByDateIndex(1)">Day 2</button>
+          <button class="date-pill" id="pill-date-2" onclick="filterByDateIndex(2)">Day 3</button>
+          <button class="date-pill" id="pill-date-3" onclick="filterByDateIndex(3)">Day 4</button>
+          <button class="date-pill" id="pill-date-4" onclick="filterByDateIndex(4)">Day 5</button>
+          <button class="date-pill" id="pill-date-5" onclick="filterByDateIndex(5)">Day 6</button>
+          <button class="date-pill" id="pill-date-6" onclick="filterByDateIndex(6)">Day 7</button>
+        </div>
+      </div>
+
+      <!-- Top 5 Cards Grid -->
+      <div class="cards-grid" id="top5-cards-container">
+        <!-- Dynamically rendered cards -->
+        <div class="skeleton-card">
+          <div class="skeleton-line full"></div>
+          <div class="skeleton-line half"></div>
+          <div class="skeleton-line quarter"></div>
+        </div>
+      </div>
+
+      <!-- Top 5 Table View (Section 13 Compliance) -->
+      <div class="table-container hidden" id="top5-table-container">
+        <table class="flights-table" id="flights-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Airline & Flight</th>
+              <th>Stops</th>
+              <th>Duration</th>
+              <th>Airfare (Taxes + Bag)</th>
+              <th>Dubai Ground Transport</th>
+              <th>Total Realistic Fare</th>
+              <th>Verified Source</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="flights-table-body">
+            <!-- Dynamically rendered -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 17: DUBAI GROUND TRANSPORT ARBITRAGE CALCULATOR -->
+    <section class="arbitrage-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">DUBAI GROUND TRANSPORT ARBITRAGE</h2>
+          <p class="section-desc">
+            Section 17 Analysis: Flying to Sharjah (SHJ) or Abu Dhabi (AUH) can be significantly cheaper than Dubai International (DXB), even after factoring in taxi/coach ground transport to central Dubai.
+          </p>
+        </div>
+      </div>
+
+      <div class="arbitrage-grid" id="arbitrage-cards">
+        <!-- DXB Card -->
+        <div class="arbitrage-card" id="arb-card-dxb">
+          <div class="arb-card-header">
+            <span class="airport-code-badge badge-dxb">DXB</span>
+            <span class="airport-name">Dubai International</span>
+          </div>
+          <div class="arb-price-breakdown">
+            <div class="arb-row"><span>Cheapest Airfare:</span> <strong id="arb-dxb-airfare">₹--</strong></div>
+            <div class="arb-row"><span>Ground Transport to Dubai:</span> <span class="tag tag-free">₹0 (Arrives in Dubai)</span></div>
+            <div class="arb-divider"></div>
+            <div class="arb-total-row"><span>Total Effective:</span> <span class="arb-total-cost" id="arb-dxb-total">₹--</span></div>
+          </div>
+          <div class="arb-badge-footer">Direct City Center Arrival</div>
+        </div>
+
+        <!-- SHJ Card -->
+        <div class="arbitrage-card highlighted-arbitrage" id="arb-card-shj">
+          <div class="arb-card-header">
+            <span class="airport-code-badge badge-shj">SHJ</span>
+            <span class="airport-name">Sharjah International</span>
+            <span class="badge badge-saving" id="shj-saving-badge">BEST VALUE</span>
+          </div>
+          <div class="arb-price-breakdown">
+            <div class="arb-row"><span>Cheapest Airfare:</span> <strong id="arb-shj-airfare">₹--</strong></div>
+            <div class="arb-row"><span>Ground Transport to Dubai:</span> <span class="tag tag-cost">+₹500 (Express Taxi/Bus)</span></div>
+            <div class="arb-divider"></div>
+            <div class="arb-total-row"><span>Total Effective:</span> <span class="arb-total-cost" id="arb-shj-total">₹--</span></div>
+          </div>
+          <div class="arb-badge-footer" id="shj-comparison-text">Evaluating Ground Savings...</div>
+        </div>
+
+        <!-- AUH Card -->
+        <div class="arbitrage-card" id="arb-card-auh">
+          <div class="arb-card-header">
+            <span class="airport-code-badge badge-auh">AUH</span>
+            <span class="airport-name">Abu Dhabi (Zayed Intl)</span>
+          </div>
+          <div class="arb-price-breakdown">
+            <div class="arb-row"><span>Cheapest Airfare:</span> <strong id="arb-auh-airfare">₹--</strong></div>
+            <div class="arb-row"><span>Ground Transport to Dubai:</span> <span class="tag tag-cost">+₹1,800 (Airport Coach/Taxi)</span></div>
+            <div class="arb-divider"></div>
+            <div class="arb-total-row"><span>Total Effective:</span> <span class="arb-total-cost" id="arb-auh-total">₹--</span></div>
+          </div>
+          <div class="arb-badge-footer" id="auh-comparison-text">1hr 15m transfer to Dubai</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICE TRENDS & HISTORY -->
+    <section class="trends-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">PRICE FLUCTUATION HISTORY</h2>
+          <p class="section-desc">Persistent price trends across consecutive 5-minute autonomous scan cycles.</p>
+        </div>
+      </div>
+
+      <div class="chart-container-card">
+        <div class="chart-canvas-wrap">
+          <canvas id="trendChart" width="1000" height="260"></canvas>
+        </div>
+        <div class="chart-legend" id="chart-legend">
+          <!-- Dynamically populated legend -->
+        </div>
+      </div>
+    </section>
+
+    <!-- RECENT ALERTS FEED -->
+    <section class="alerts-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">PRICE ALERTS & CHANGE LOG</h2>
+          <p class="section-desc">Real-time notifications for price drops ≥ ₹300, new cheapest routes, and Top 5 entrants.</p>
+        </div>
+      </div>
+      <div class="alerts-list-card" id="alerts-list-container">
+        <div class="empty-state">No alerts triggered yet. Monitoring in background...</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: Configuration & Customization -->
+  <div class="modal-overlay hidden" id="config-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">⚙️ Flight Monitor Configuration</h2>
+        <button class="modal-close-btn" onclick="closeModal('config-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="config-form" onsubmit="handleConfigSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cfg-travel-date">Anchor Travel Date (7 Consecutive Days Monitored)</label>
+              <input type="date" id="cfg-travel-date" class="form-input" required>
+              <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; display: block;">
+                The agent continuously tracks 7 consecutive travel dates (Day 1 through Day 7) starting from this date.
+              </small>
+            </div>
+            <div class="form-group">
+              <label for="cfg-baggage">Baggage Preference</label>
+              <select id="cfg-baggage" class="form-select">
+                <option value="Cabin Only (7kg)">Cabin Only (7kg)</option>
+                <option value="15kg Checked Bag">15kg Checked Bag</option>
+                <option value="20kg Checked Bag" selected>20kg Checked Bag</option>
+                <option value="30kg Checked Bag">30kg Checked Bag</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cfg-max-stops">Maximum Stops</label>
+              <select id="cfg-max-stops" class="form-select">
+                <option value="0">Non-stop Flights Only</option>
+                <option value="1">Up to 1 Stop</option>
+                <option value="2" selected>Up to 2 Stops (Default)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="cfg-max-duration">Maximum Journey Duration (Hours)</label>
+              <input type="number" id="cfg-max-duration" class="form-input" min="3" max="48" value="24">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cfg-refresh-interval">Autonomous Refresh Interval (Seconds)</label>
+              <select id="cfg-refresh-interval" class="form-select">
+                <option value="60">1 Minute (Fast Test)</option>
+                <option value="120">2 Minutes</option>
+                <option value="300" selected>5 Minutes (Standard / Spec)</option>
+                <option value="600">10 Minutes</option>
+                <option value="900">15 Minutes</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="cfg-alert-threshold">Alert Drop Threshold (₹)</label>
+              <input type="number" id="cfg-alert-threshold" class="form-input" min="50" max="5000" value="300">
+            </div>
+          </div>
+
+          <div class="form-section-title">⚡ AI Extraction Engine (Groq API)</div>
+          <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="cfg-groq-key">Groq API Key (Strictly Real Un-Fabricated Data)</label>
+              <input type="password" id="cfg-groq-key" class="form-input" placeholder="gsk_..." autocomplete="off">
+              <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">
+                Groq uses <code>llama-3.3-70b-versatile</code> to extract authentic live airfare data directly from approved flight domains with zero fabrication.
+              </small>
+            </div>
+          </div>
+
+          <div class="form-section-title">Dubai Ground Transport Estimates (INR to Dubai Downtown)</div>
+          <div class="form-row three-cols">
+            <div class="form-group">
+              <label for="cfg-gt-dxb">DXB Ground Cost</label>
+              <input type="number" id="cfg-gt-dxb" class="form-input" value="0">
+            </div>
+            <div class="form-group">
+              <label for="cfg-gt-shj">SHJ Ground Cost</label>
+              <input type="number" id="cfg-gt-shj" class="form-input" value="500">
+            </div>
+            <div class="form-group">
+              <label for="cfg-gt-auh">AUH Ground Cost</label>
+              <input type="number" id="cfg-gt-auh" class="form-input" value="1800">
+            </div>
+          </div>
+
+          <div class="form-section-title">Monitored Departure Airports (South India)</div>
+          <div class="airports-selection-pills" id="airports-checkbox-grid">
+            <!-- Dynamically populated airport pills -->
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('config-modal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save & Apply Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Source Compliance & Audit Logs -->
+  <div class="modal-overlay hidden" id="audit-modal">
+    <div class="modal-box modal-box-large">
+      <div class="modal-header">
+        <h2 class="modal-title">🛡️ Data Source Compliance & Verification Audit</h2>
+        <button class="modal-close-btn" onclick="closeModal('audit-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="audit-policy-box">
+          <strong>Section 5 & 6 Compliance:</strong> Only websites whose primary purpose is flight search, airline booking, or airfare comparison are allowed. General search snippets, social media (Reddit, X, Facebook, Instagram), and unverified blogs are strictly rejected.
+        </div>
+
+        <h3 class="subsection-title">Approved Domains Allowlist</h3>
+        <div class="allowlist-tags" id="allowlist-tags-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <h3 class="subsection-title" style="margin-top: 24px;">Latest Source Query Audit Logs</h3>
+        <div class="audit-table-wrap">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Source Name</th>
+                <th>Domain</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th>Flights Found</th>
+              </tr>
+            </thead>
+            <tbody id="audit-logs-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div>AirBus AI Autonomous Flight Fare Monitoring Agent • South India to Dubai, Sharjah & Abu Dhabi</div>
+      <div class="footer-meta">Real-time 5-minute autonomous scanner • Persistent SQLite state</div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js?v=7dates"></script>
+</body>
+</html>
